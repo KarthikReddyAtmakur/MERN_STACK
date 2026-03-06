@@ -6,14 +6,14 @@ app.listen(8080, () => console.log("Server Started"));
 
 app.use(express.urlencoded({ extended: true }));
 
-const users = [
+let users = [
   { name: "Poojitha", email: "poojitha@gmail.com", password: "1234" },
   { name: "Ajay", email: "ajay@gmail.com", password: "1234" },
   { name: "Komal", email: "komal@gmail.com", password: "1234" },
 ];
 
 app.get("/login", (req, res) => {
-  res.render("login");
+  res.render("login", { error: null });
 });
 
 app.post("/login", (req, res) => {
@@ -23,17 +23,23 @@ app.post("/login", (req, res) => {
     if (user.password === password) {
       res.redirect("/");
     } else {
-      res.redirect("/login");
+      res.render("login", { error: "Invalid Password" });
     }
   } else {
-    res.redirect("/login");
+    res.render("login", { error: "User not found" });
   }
-  res.redirect("/");
+  // res.redirect("/");
 });
 
 app.get("/register", (req, res) => {
   res.render("register");
 });
+
+app.post("/register", (req, res) => {
+  users = [...users, req.body];
+  res.redirect("/");
+});
+
 app.get("/", (req, res) => {
   res.render("dashboard", { users });
 });
