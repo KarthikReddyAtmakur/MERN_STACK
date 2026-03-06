@@ -1,10 +1,23 @@
 import express from "express";
+import session from "express-session";
+import expressLayouts from "express-ejs-layouts";
 const app = express();
+app.use(expressLayouts);
+app.use(express.static("public"))
+app.set("layout","layout");
 app.set("view engine", "ejs");
 app.set("views", "views");
 app.listen(8080, () => console.log("Server Started"));
 
 app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  session({
+    secret:"mySecretKey",//recommended to store in env file
+    resave: false,
+    saveUninitialized:false,
+  }),
+);
 
 let users = [
   { name: "Poojitha", email: "poojitha@gmail.com", password: "1234" },
@@ -21,6 +34,7 @@ app.post("/login", (req, res) => {
   const user = users.find((user) => user.email === email);
   if (user) {
     if (user.password === password) {
+      req.session.user = user;//sessionid is created, check in browser inspect->application->cookies.
       res.redirect("/");
     } else {
       res.render("login", { error: "Invalid Password" });
@@ -41,5 +55,10 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.render("dashboard", { users });
+  if(req.session.user){
+    res.render("dashboard", { users });
+  }
+  else{
+    res.redirect("/login");
+  }
 });
